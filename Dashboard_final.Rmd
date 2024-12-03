@@ -1,0 +1,399 @@
+---
+title: "Death Rate in USA"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    social: [ "twitter", "facebook", "menu"]
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(knitr)
+library(DT)
+library(rpivotTable)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(openintro)
+library(highcharter)
+library(ggvis)
+library(shiny)
+```
+
+
+```{r}
+##file_path <- file.choose()
+t <- getwd()
+
+# Construct the file path
+file_path <- file.path(t, "death1.csv")
+
+# Read the CSV file
+data <- read.csv(file_path)
+```
+
+```{r}
+mycolors <- c("blue", "#FFC125", "darkgreen", "darkorange")
+```
+
+Interactive Data Visualization
+=====================================
+
+Row
+-------------------------------------
+
+### Causes of Deaths
+
+```{r}
+valueBox(paste("Deaths"),
+         color = "warning")
+```
+
+### Total Number of Deaths over the years
+
+```{r}
+valueBox(sum(data$Deaths),
+         icon = "fa-user")
+```
+
+
+### 2016
+
+```{r}
+ci1 <-  data %>%
+       na.omit() %>%
+       filter(data$Year=="2016") 
+  
+valueBox(value= sum(ci1$Deaths),
+         icon = 'fa-building')
+```
+
+### 2015
+
+```{r}
+ci2 <-  data %>%
+       na.omit() %>%
+       filter(data$Year=="2015") 
+  
+valueBox(value= sum(ci2$Deaths),
+         icon = 'fa-building')
+```
+
+### 2014
+
+```{r}
+ci3 <-  data %>%
+       na.omit() %>%
+       filter(data$Year=="2014") 
+  
+valueBox(value= sum(ci3$Deaths),
+         icon = 'fa-building')
+```
+
+### 2013
+
+```{r}
+ci4 <-  data %>%
+       na.omit() %>%
+       filter(data$Year=="2013") 
+  
+valueBox(value= sum(ci4$Deaths),
+         icon = 'fa-building')
+```
+
+Row
+-------------------------------
+
+### Deaths in 1999
+
+```{r}
+
+ci6 <-data %>% filter(data$Year=="1999") %>% group_by(Cause.Name)
+p1 <- ci6 %>%
+         plot_ly(x = ~Cause.Name,
+                 y = ~Deaths,
+                 color = "blue",
+                 type = 'bar') %>%
+         layout(xaxis = list(title = "Causes of Death"),
+                yaxis = list(title = 'Count'))
+p1
+```
+
+### Deaths in 2001
+
+``` {r}
+p2 <- data %>%
+         group_by(Cause.Name) %>%
+         filter(Year=="2001") %>%
+         plot_ly(labels = ~Cause.Name,
+                 values = ~Deaths,
+                 marker = list(colors = mycolors))  %>%
+         add_pie(hole = 0.2) %>%
+         layout(xaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels = F,
+                             showgrid = F),
+                yaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels=F,
+                             showgrid=F))
+
+p2
+```
+
+### Deaths in States
+
+```{r}
+p3 <- plot_ly(data,
+              x = ~State,
+              y = ~Deaths ,
+              text = paste("State:", data$State,
+                           "Deaths:",
+                           data$Deaths),
+              type = "bar") %>%
+              layout(xaxis = list(title="States"),
+                     yaxis = list(title = "Number of Deaths"))
+p3
+```
+
+Row
+------------------------------------
+### Scatter Plot of Deaths Vs death Rate based on age
+
+```{r}
+p4 <- plot_ly(data, x=~Deaths) %>%
+         add_markers(y = ~Age.adjusted.Death.Rate,
+                     text = ~paste("Mileage: ",Age.adjusted.Death.Rate ),
+                     showlegend = F) %>%
+         add_lines(y = ~fitted(loess(Age.adjusted.Death.Rate ~ Deaths)),
+                   name = "Loess Smoother",
+                   color = I("#FFC125"),
+                   showlegend = T,
+                   line = list(width=5)) %>%
+         layout(xaxis = list(title = "Number of Deaths"),
+                yaxis = list(title = "Age adjusted Death Rate"))
+p4
+```
+
+### Box Plot of Death Rate 
+
+```{r}
+p5<- plot_ly(data, y=~Age.adjusted.Death.Rate, color = ~State, type="box")%>%
+         layout(xaxis = list(title = "States"),
+                yaxis = list(title = "Age adjusted Death Rate"))
+p5
+```
+
+Over the years
+=======================================
+
+Row
+-------------------------------
+
+### Alzeheimers
+
+```{r}
+p6 <- data %>%
+         group_by(Year) %>%
+         filter(Cause.Name=="Alzheimer's disease") %>%
+         plot_ly(labels = ~Year,
+                 values = ~Deaths,
+                 marker = list(colors = mycolors))  %>%
+         add_pie(hole = 0.2) %>%
+         layout(xaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels = F,
+                             showgrid = F),
+                yaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels=F,
+                             showgrid=F))
+p6
+```
+
+### Diabetes
+
+```{r}
+p7 <- data %>%
+         group_by(Year) %>%
+         filter(Cause.Name=="Diabetes") %>%
+         plot_ly(labels = ~Year,
+                 values = ~Deaths,
+                 marker = list(colors = mycolors))  %>%
+         add_pie(hole = 0.2) %>%
+         layout(xaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels = F,
+                             showgrid = F),
+                yaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels=F,
+                             showgrid=F))
+p7
+```
+
+Row
+-------------------------------
+### Suicide
+
+```{r}
+p8 <- data %>%
+         group_by(Year) %>%
+         filter(Cause.Name=="Suicide") %>%
+         plot_ly(labels = ~Year,
+                 values = ~Deaths,
+                 marker = list(colors = mycolors))  %>%
+         add_pie(hole = 0.2) %>%
+         layout(xaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels = F,
+                             showgrid = F),
+                yaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels=F,
+                             showgrid=F))
+p8
+```
+
+### Unintentional injuries
+
+```{r}
+p9 <- data %>%
+         group_by(Year) %>%
+         filter(Cause.Name=="Unintentional injuries") %>%
+         plot_ly(labels = ~Year,
+                 values = ~Deaths,
+                 marker = list(colors = mycolors))  %>%
+         add_pie(hole = 0.2) %>%
+         layout(xaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels = F,
+                             showgrid = F),
+                yaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels=F,
+                             showgrid=F))
+p9
+```
+
+Map
+========================================
+
+### Map
+
+```{r}
+ci10<- data %>% filter(Year=="2016") %>% group_by(State.Code) %>% summarize(avg=mean(Deaths))
+l <- list(color = toRGB("white"), width = 2)
+g <- list(
+  scope= "usa",
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('white')
+)
+p10 <- plot_geo(ci10, locationmode = 'USA-states') %>% 
+                add_trace(
+                  z = ~avg, text = ~avg, locations = ~State.Code,
+                  color = ~avg, colors = 'Purples'
+                ) %>%
+                colorbar(title = "Deaths") %>%
+                layout(
+                  title = 'DEATHS IN VARIOUS STATES<br>(Hover for breakdown)',
+                  geo = g
+                )
+p10
+```
+
+
+Pivot Table {data=vertical-layout=scroll,horizontal-layout=scroll}
+=========================================
+
+```{r}
+rpivotTable(data,
+            aggregatorName = "Count",
+            cols= "Age adjusted Death Rate",
+            rows = "State",
+            rendererName = "Heatmap",
+            height="600px",
+            overflow="scroll")
+
+
+```
+
+Data Table
+========================================
+```{r}
+datatable(data,
+          caption = "Death Data",
+          rownames = T,
+          filter = "top",
+          options = list(pageLength = 25))
+```
+
+
+Summary {data-orientation=rows} 
+===========================================
+Row
+-----------
+
+### Number of Deaths
+
+```{r}
+valueBox(sum(data$Deaths),
+         icon = "fa-user" )
+```
+
+### Average Death Rate
+```{r}
+valueBox(round(mean(data$Age.adjusted.Death.Rate),
+               digits = 2),
+         icon = "fa-area-chart")
+```
+
+### Number of Unique Causes of Death
+
+```{r}
+valueBox(length(unique(data$Cause.Name)),
+         icon = "fa-user")
+```
+
+Row
+-------------
+### Top 5 causes of death
+```{r}
+ci11<-data %>% filter(Year==2016) %>% group_by(Cause.Name) %>% summarise(countDeaths=sum(Deaths)) %>% arrange(desc(countDeaths))
+temp<-ci11 %>% head(5)
+
+datatable(temp,
+          caption = "Top 5 causes of Death",
+          rownames = T
+          )
+```
+
+### States with the most Deaths
+```{r}
+ci11<-data %>% filter(Year==2016) %>% group_by(State) %>% summarise(countDeaths=sum(Age.adjusted.Death.Rate)) %>% arrange(desc(countDeaths))
+temp<-ci11 %>% head(10)
+
+datatable(temp,
+          caption = "Top 10 states with highest Death Rate",
+          rownames = T)
+```
+
+
+
+About Report
+========================================
+
+Created by: ASMITA CHOTANI 
+
+Conclusion
+
+* This is a report on `r sum(data$Deaths)` Deaths.
+
+* This is a report on `r length(unique(data$State))` States.
+
+* This report was generated on `r format(Sys.Date(), format = "%B %d, %Y")`.
+
+
