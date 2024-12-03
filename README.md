@@ -3,7 +3,7 @@ An Exploratory Data Analysis project utilizing R for dashboard creation
 
 # Information Analysis
 
-Welcome to the **Information Analysis** project! This repository showcases a detailed analysis hosted on [RPubs](https://rpubs.com/achotani/information_analysis). The project demonstrates various techniques in data processing, visualization, and interpretation using R.
+This repository showcases a detailed analysis hosted on [RPubs](https://rpubs.com/achotani/information_analysis). The project demonstrates various techniques in data processing, visualization, and interpretation using R.
 
 ## Overview
 This project is a comprehensive example of how to perform exploratory data analysis (EDA) and derive meaningful insights from datasets. It includes:
